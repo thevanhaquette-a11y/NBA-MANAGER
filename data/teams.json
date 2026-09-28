@@ -1,0 +1,14 @@
+{
+  "teams": [
+    {
+      "id": "PHI",
+      "name": "Philadelphia 76ers",
+      "slug": "PHI"
+    },
+    {
+      "id": "SAS",
+      "name": "San Antonio Spurs",
+      "slug": "SAS"
+    }
+  ]
+}

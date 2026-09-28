@@ -593,7 +593,7 @@ class TacticalModel:
                 self.defense[metric] += delta
 
         self.pass_bonus = {
-            "Statique": -0.10,
+            "Statique": -0.12,
             "Équilibré": 0.0,
             "Très collectif": 0.22,
         }.get(self.tactics.get("ballMovement"), 0.0)
@@ -1275,7 +1275,7 @@ def choose_shot(player, action, tactics):
         if random.random() < 0.64:
             return 2, "paint"
         return 3, "perimeter"
-    three = (10 + tendency(player, "three") * 0.62) * 1.10
+    three = (25 + tendency(player, "three") * 0.96) * 1.10
     two = 20 + tendency(player, "paint") * 0.38 + tendency(player, "midrange") * 0.24
     if tactics.get("offenseStyle") == "Adresse extérieure": three *= 1.15
     if tactics.get("threePointFocus") == "Accentué": three *= 1.20
@@ -1287,7 +1287,7 @@ def choose_shot(player, action, tactics):
 
 def pass_probability(passer, action, tactics):
     model = TacticalModel(tactics)
-    base = 0.16 + tendency(passer, "pass") / 420
+    base = 0.18 + tendency(passer, "pass") / 380
     if action in ("catch_and_shoot", "handoff", "pick_and_roll"): base += 0.12
     base += model.pass_bonus
     if passer.fatigue > 60: base -= 0.08
@@ -1306,24 +1306,24 @@ def shooting_chance(attacker, defender, shot_type, shot_area, tactics, assisted,
     play = stat_with_fatigue(attacker, "playmaking")
     defense = defender_quality(defender, shot_area, tactics, attacker)
     if shot_type == 3:
-        chance = 20.0 + p * 0.270 + play * 0.018
-        chance -= defense * 0.075
-        if attacker.role in ("Shooter", "3&D"): chance += 2.0
-        if assisted: chance += 1.2
+        chance = 20.5 + p * 0.275 + play * 0.015
+        chance -= defense * 0.060
+        if attacker.role in ("Shooter", "3&D"): chance += 1.5
+        if assisted: chance += 1.0
         chance -= adaptation
-        minimum, maximum = 24, 52
+        minimum, maximum = 22, 48
     elif shot_area == "midrange":
-        chance = 33.0 + p * 0.310 + ath * 0.035 + play * 0.010 - defense * 0.075
-        if assisted: chance += 1.0
+        chance = 32.0 + p * 0.290 + ath * 0.030 + play * 0.010 - defense * 0.080
+        if assisted: chance += 0.8
         chance -= adaptation * 0.65
-        minimum, maximum = 30, 58
+        minimum, maximum = 28, 56
     else:
-        chance = 37.5 + i * 0.300 + ath * 0.035 + play * 0.010 - defense * 0.085
-        if attacker.role in ("Scoreur intérieur", "Intérieur"): chance += 2.3
-        if primary_position(attacker) in ("PF", "C"): chance += 1.2
-        if assisted: chance += 1.0
+        chance = 38.0 + i * 0.300 + ath * 0.035 + play * 0.010 - defense * 0.080
+        if attacker.role in ("Scoreur intérieur", "Intérieur"): chance += 2.0
+        if primary_position(attacker) in ("PF", "C"): chance += 1.0
+        if assisted: chance += 0.8
         chance -= adaptation * 0.45
-        minimum, maximum = 38, 66
+        minimum, maximum = 37, 65
 
     if help_defender is not None:
         if shot_area == "paint": chance -= interior_defense(help_defender) * 0.022
@@ -1423,10 +1423,10 @@ def action_probability_of_pass(attacker, action, tactics):
 TURNOVER_BASE = 10.5     # calibré pour ~13-14 balles perdues / équipe / match
 
 ASSIST_RATE = {
-    "catch_and_shoot": 0.72, "handoff": 0.68, "kickout": 0.95, "pick_and_roll": 0.48,
-    "transition": 0.52, "drive": 0.36, "post_up": 0.24, "isolation": 0.06,
+    "catch_and_shoot": 0.75, "handoff": 0.70, "kickout": 0.95, "pick_and_roll": 0.52,
+    "transition": 0.55, "drive": 0.38, "post_up": 0.26, "isolation": 0.08,
 }
-ASSIST_SCALE = 1.5
+ASSIST_SCALE = 1.8
 
 
 def credit_assist(team, shooter, action, assisted, passer):
@@ -1489,12 +1489,12 @@ def simulate_possession(attacking_team, defending_team, tactics, defending_tacti
 
     # Turnover avant le tir : pression + fatigue + complexité de l'action.
     tm = TacticalModel(tactics); dm = TacticalModel(defending_tactics)
-    turnover = TURNOVER_BASE + (100 - stat_with_fatigue(passer, "playmaking")) * 0.035
-    turnover += dm.defense["turnover"] * 4
+    turnover = TURNOVER_BASE + (100 - stat_with_fatigue(passer, "playmaking")) * 0.028
+    turnover += dm.defense["turnover"] * 3.2
     turnover += max(0.0, dm.defense["pressure"]) * 2.0
-    turnover += attacker.fatigue * 0.055
-    turnover += 0.8 if action in ("pick_and_roll", "drive") else 0
-    turnover += tm.shot_risk * 1.4
+    turnover += attacker.fatigue * 0.040
+    turnover += 0.7 if action in ("pick_and_roll", "drive") else 0
+    turnover += tm.shot_risk * 1.3
     if tactics.get("ballMovement") == "Très collectif": turnover -= 0.7
     if random.random() * 100 < max(5, min(24, turnover)):
         passer.turnovers += 1
