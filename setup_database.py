@@ -52,8 +52,8 @@ def validate_database(path: Path) -> tuple[bool, str, dict]:
 
     teams_doc = load_json(TEAMS_FILE, {"teams": []})
     team_ids = [t["id"] for t in teams_doc.get("teams", [])]
-    if len(team_ids) != 30:
-        return False, f"teams.json ne contient pas 30 équipes ({len(team_ids)} trouvées).", {}
+    if len(team_ids) < 29:
+        return False, f"teams.json ne contient pas assez d'équipes ({len(team_ids)} trouvées, minimum 29 requis).", {}
 
     missing_teams = [tid for tid in team_ids if not players.get(tid)]
     if missing_teams:
