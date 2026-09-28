@@ -1,14 +1,149 @@
 {
   "teams": [
     {
+      "id": "ATL",
+      "name": "Atlanta Hawks",
+      "slug": "ATL"
+    },
+    {
+      "id": "BOS",
+      "name": "Boston Celtics",
+      "slug": "BOS"
+    },
+    {
+      "id": "BKN",
+      "name": "Brooklyn Nets",
+      "slug": "BKN"
+    },
+    {
+      "id": "CHA",
+      "name": "Charlotte Hornets",
+      "slug": "CHA"
+    },
+    {
+      "id": "CHI",
+      "name": "Chicago Bulls",
+      "slug": "CHI"
+    },
+    {
+      "id": "CLE",
+      "name": "Cleveland Cavaliers",
+      "slug": "CLE"
+    },
+    {
+      "id": "DAL",
+      "name": "Dallas Mavericks",
+      "slug": "DAL"
+    },
+    {
+      "id": "DEN",
+      "name": "Denver Nuggets",
+      "slug": "DEN"
+    },
+    {
+      "id": "DET",
+      "name": "Detroit Pistons",
+      "slug": "DET"
+    },
+    {
+      "id": "GSW",
+      "name": "Golden State Warriors",
+      "slug": "GSW"
+    },
+    {
+      "id": "HOU",
+      "name": "Houston Rockets",
+      "slug": "HOU"
+    },
+    {
+      "id": "IND",
+      "name": "Indiana Pacers",
+      "slug": "IND"
+    },
+    {
+      "id": "LAC",
+      "name": "Los Angeles Clippers",
+      "slug": "LAC"
+    },
+    {
+      "id": "LAL",
+      "name": "Los Angeles Lakers",
+      "slug": "LAL"
+    },
+    {
+      "id": "MEM",
+      "name": "Memphis Grizzlies",
+      "slug": "MEM"
+    },
+    {
+      "id": "MIA",
+      "name": "Miami Heat",
+      "slug": "MIA"
+    },
+    {
+      "id": "MIL",
+      "name": "Milwaukee Bucks",
+      "slug": "MIL"
+    },
+    {
+      "id": "MIN",
+      "name": "Minnesota Timberwolves",
+      "slug": "MIN"
+    },
+    {
+      "id": "NOP",
+      "name": "New Orleans Pelicans",
+      "slug": "NOP"
+    },
+    {
+      "id": "NYK",
+      "name": "New York Knicks",
+      "slug": "NYK"
+    },
+    {
+      "id": "ORL",
+      "name": "Orlando Magic",
+      "slug": "ORL"
+    },
+    {
       "id": "PHI",
       "name": "Philadelphia 76ers",
       "slug": "PHI"
     },
     {
+      "id": "PHX",
+      "name": "Phoenix Suns",
+      "slug": "PHX"
+    },
+    {
+      "id": "POR",
+      "name": "Portland Trail Blazers",
+      "slug": "POR"
+    },
+    {
+      "id": "SAC",
+      "name": "Sacramento Kings",
+      "slug": "SAC"
+    },
+    {
       "id": "SAS",
       "name": "San Antonio Spurs",
       "slug": "SAS"
+    },
+    {
+      "id": "TOR",
+      "name": "Toronto Raptors",
+      "slug": "TOR"
+    },
+    {
+      "id": "UTA",
+      "name": "Utah Jazz",
+      "slug": "UTA"
+    },
+    {
+      "id": "WAS",
+      "name": "Washington Wizards",
+      "slug": "WAS"
     }
   ]
 }
