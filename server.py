@@ -241,17 +241,67 @@ def build_ai_rotation(team):
     return build_default_rotation_minutes(team.roster, team.starters)
 
 
-def ai_tactics(team):
-    """Tactiques simples selon le profil des titulaires (le reste reste par défaut)."""
+def ai_tactics(opponent_team, user_team=None):
+    """Tactiques de l'IA basées sur le matchup contre l'utilisateur.
+    Si user_team est fourni, l'IA adapte ses tactiques en fonction des faiblesses de l'utilisateur.
+    Sinon, elle utilise son profil offensif par défaut.
+    """
+    from main import perimeter_defense, interior_defense
     tactics = DEFAULT_TACTICS.copy()
-    outside = sum(p.outside_scoring for p in team.starters) / 5
-    inside = sum(p.inside_scoring for p in team.starters) / 5
-    if outside - inside >= 14:
-        tactics["offenseStyle"] = "Pace & Space"
-        tactics["threePointFocus"] = "Accentué"
-    elif inside >= outside - 2:
-        tactics["offenseStyle"] = "Jeu intérieur"
-        tactics["postUpFrequency"] = "Fréquent"
+    
+    # Forces offensives de l'IA
+    opponent_outside = sum(p.outside_scoring for p in opponent_team.starters) / 5
+    opponent_inside = sum(p.inside_scoring for p in opponent_team.starters) / 5
+    
+    # Si on connaît l'équipe utilisateur, analyser le matchup
+    if user_team:
+        # Faiblesses défensives de l'utilisateur
+        user_perimeter_def = sum(perimeter_defense(p) for p in user_team.starters) / 5
+        user_interior_def = sum(interior_defense(p) for p in user_team.starters) / 5
+        
+        # Avantages offensifs de l'IA
+        outside_adv = opponent_outside - user_perimeter_def
+        inside_adv = opponent_inside - user_interior_def
+        
+        # Choisir la tactique en fonction de l'avantage le plus fort
+        if inside_adv > outside_adv + 5:  # Avantage intérieur clair
+            tactics["offenseStyle"] = "Jeu intérieur"
+            tactics["postUpFrequency"] = "Fréquent"
+            tactics["threePointFocus"] = "Limité"
+            tactics["defensivePriority"] = "Protéger peinture"
+        elif outside_adv > inside_adv + 5:  # Avantage extérieur clair
+            tactics["offenseStyle"] = "Pace & Space"
+            tactics["threePointFocus"] = "Accentué"
+            tactics["defensivePriority"] = "Limiter 3 pts"
+        else:  # Équilibre
+            if opponent_outside > opponent_inside:
+                tactics["offenseStyle"] = "Adresse extérieure"
+                tactics["threePointFocus"] = "Accentué"
+                tactics["defensivePriority"] = "Limiter 3 pts"
+            else:
+                tactics["offenseStyle"] = "Jeu intérieur"
+                tactics["postUpFrequency"] = "Normal"
+                tactics["defensivePriority"] = "Protéger peinture"
+        
+        # Tactiques défensives : cibler la force de l'utilisateur
+        if user_team.starters and max(p.outside_scoring for p in user_team.starters) > 75:
+            tactics["defensivePriority"] = "Limiter 3 pts"
+        else:
+            tactics["defensivePriority"] = "Protéger peinture"
+    else:
+        # Sans info sur l'utilisateur, utiliser le profil seul
+        if opponent_inside > opponent_outside + 5:
+            tactics["offenseStyle"] = "Jeu intérieur"
+            tactics["postUpFrequency"] = "Fréquent"
+            tactics["defensivePriority"] = "Protéger peinture"
+        elif opponent_outside > opponent_inside + 5:
+            tactics["offenseStyle"] = "Pace & Space"
+            tactics["threePointFocus"] = "Accentué"
+            tactics["defensivePriority"] = "Limiter 3 pts"
+        else:
+            tactics["offenseStyle"] = "Équilibré"
+            tactics["defensivePriority"] = "Équilibrée"
+    
     return tactics
 
 
@@ -473,7 +523,7 @@ class Server(SimpleHTTPRequestHandler):
             rotation2 = build_ai_rotation(opponent_team)
             starter_names2 = [player.name for player in opponent_team.starters]
             role_map2 = None
-            tactics2 = ai_tactics(opponent_team)
+            tactics2 = ai_tactics(opponent_team, user_team)
 
             print()
             print("========================================")
