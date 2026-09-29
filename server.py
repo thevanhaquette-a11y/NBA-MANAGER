@@ -273,16 +273,22 @@ def ai_tactics(opponent_team, user_team=None):
             tactics["offenseStyle"] = "Pace & Space"
             tactics["threePointFocus"] = "Accentué"
             tactics["defensivePriority"] = "Limiter 3 pts"
-        else:  # Équilibre - utiliser la Force Réelle des titulaires
-            # Calculer la force intérieure vs extérieure
-            opponent_force_inside = sum(p.inside_scoring for p in opponent_team.starters) / 5
-            opponent_force_outside = sum(p.outside_scoring for p in opponent_team.starters) / 5
+        else:  # Équilibre - utiliser la Force Réelle (tous attributs)
+            # Calculer la Force Réelle intérieure vs extérieure
+            opponent_force_inside = sum(
+                p.inside_scoring * 0.4 + p.rebounding * 0.2 + p.athleticism * 0.2 + p.defense * 0.2
+                for p in opponent_team.starters
+            ) / 5
+            opponent_force_outside = sum(
+                p.outside_scoring * 0.4 + p.playmaking * 0.2 + p.athleticism * 0.2 + p.defense * 0.2
+                for p in opponent_team.starters
+            ) / 5
             if opponent_force_inside > opponent_force_outside:
                 tactics["offenseStyle"] = "Jeu intérieur"
                 tactics["postUpFrequency"] = "Normal"
                 tactics["defensivePriority"] = "Protéger peinture"
             else:
-                tactics["offenseStyle"] = "Pace & Space"
+                tactics["offenseStyle"] = "Adresse extérieure"
                 tactics["threePointFocus"] = "Normal"
                 tactics["defensivePriority"] = "Limiter 3 pts"
         
