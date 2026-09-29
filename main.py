@@ -1223,13 +1223,13 @@ def choose_offensive_action(team, tactics, score_for=0, score_against=0, clock_r
     # Défense adverse : une consigne est une contrainte que l'attaque essaie d'exploiter.
     dt = normalize_tactics(defending_tactics)
     if dt.get("defensivePriority") == "Limiter 3 pts":
-        weights["drive"] *= 1.12; weights["post_up"] *= 1.08; weights["catch_and_shoot"] *= 0.88
+        weights["drive"] *= 1.04; weights["post_up"] *= 1.02; weights["catch_and_shoot"] *= 0.92
     elif dt.get("defensivePriority") == "Protéger peinture":
-        weights["catch_and_shoot"] *= 1.12; weights["handoff"] *= 1.06; weights["post_up"] *= 0.92
+        weights["catch_and_shoot"] *= 1.04; weights["handoff"] *= 1.02; weights["post_up"] *= 0.95
     if dt.get("helpDefense") == "Forte":
-        weights["catch_and_shoot"] *= 1.08; weights["isolation"] *= 0.92
+        weights["catch_and_shoot"] *= 1.02; weights["isolation"] *= 0.95
     if dt.get("pressure") == "Forte":
-        weights["transition"] *= 1.08; weights["handoff"] *= 1.05
+        weights["transition"] *= 1.02; weights["handoff"] *= 1.01
 
     # Défense de transition / rebond : freine (ou favorise) les contre-attaques adverses.
     weights["transition"] *= max(0.4, min(1.4, 1.0 - 0.28 * transition_stop_value(TacticalModel(dt))))
@@ -1277,9 +1277,9 @@ def choose_shot(player, action, tactics):
         return 3, "perimeter"
     three = (25 + tendency(player, "three") * 0.96) * 1.10
     two = 20 + tendency(player, "paint") * 0.38 + tendency(player, "midrange") * 0.24
-    if tactics.get("offenseStyle") == "Adresse extérieure": three *= 1.15
-    if tactics.get("threePointFocus") == "Accentué": three *= 1.20
-    if tactics.get("threePointFocus") == "Limité": three *= 0.67
+    if tactics.get("offenseStyle") == "Adresse extérieure": three *= 1.05
+    if tactics.get("threePointFocus") == "Accentué": three *= 1.10
+    if tactics.get("threePointFocus") == "Limité": three *= 0.75
     shot = 3 if random.random() < three / (three + two) else 2
     if shot == 3: return 3, "perimeter"
     return 2, ("paint" if random.random() < 0.63 else "midrange")
@@ -1329,8 +1329,8 @@ def shooting_chance(attacker, defender, shot_type, shot_area, tactics, assisted,
         if shot_area == "paint": chance -= interior_defense(help_defender) * 0.022
         elif shot_area == "midrange": chance -= interior_defense(help_defender) * 0.009
         else: chance -= perimeter_defense(help_defender) * 0.009
-    if tactics.get("offenseStyle") == "Adresse extérieure" and shot_area == "perimeter": chance += 1.4
-    if tactics.get("offenseStyle") == "Jeu intérieur" and shot_area == "paint": chance += 1.8
+    if tactics.get("offenseStyle") == "Adresse extérieure" and shot_area == "perimeter": chance += 0.6
+    if tactics.get("offenseStyle") == "Jeu intérieur" and shot_area == "paint": chance += 0.8
     chance -= attacker.fatigue * 0.06
     return max(minimum, min(maximum, chance))
 

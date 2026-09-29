@@ -241,75 +241,92 @@ def build_ai_rotation(team):
     return build_default_rotation_minutes(team.roster, team.starters)
 
 
+def calculate_team_strengths(team):
+    """Calcule les points forts et faibles d'une équipe par paramètre tactique.
+    
+    Retourne un dictionnaire avec les forces moyennes et les points forts/faibles.
+    Utilise une pondération pour compenser le déséquilibre naturel des données
+    (les joueurs extérieurs ont naturellement outside_scoring > inside_scoring).
+    """
+    from main import perimeter_defense, interior_defense
+    
+    starters = team.starters
+    if not starters:
+        starters = team.roster[:5]
+    
+    # Calcul des moyennes pour chaque attribut
+    offense_inside = sum(p.inside_scoring for p in starters) / len(starters)
+    offense_outside = sum(p.outside_scoring for p in starters) / len(starters)
+    offense_playmaking = sum(p.playmaking for p in starters) / len(starters)
+    defense_perimeter = sum(perimeter_defense(p) for p in starters) / len(starters)
+    defense_interior = sum(interior_defense(p) for p in starters) / len(starters)
+    
+    # Pondération pour compenser le déséquilibre des données
+    # Les extérieurs dominent outside_scoring, donc on donne plus de poids à inside_scoring
+    # pour refléter son importance réelle dans le jeu (2pts sont plus faciles)
+    weighted_inside = offense_inside * 1.16  # Bonus de 16% pour l'intérieur
+    weighted_outside = offense_outside * 1.00
+    weighted_playmaking = offense_playmaking * 1.05
+    
+    # Déterminer les points forts et faibles en attaque (basé sur les valeurs pondérées)
+    offense_values = {
+        'inside': weighted_inside,
+        'outside': weighted_outside,
+        'playmaking': weighted_playmaking
+    }
+    strongest_offense = max(offense_values, key=offense_values.get)
+    weakest_offense = min(offense_values, key=offense_values.get)
+    
+    # Déterminer les points forts et faibles en défense
+    defense_values = {
+        'perimeter': defense_perimeter,
+        'interior': defense_interior
+    }
+    strongest_defense = max(defense_values, key=defense_values.get)
+    weakest_defense = min(defense_values, key=defense_values.get)
+    
+    return {
+        'offense_inside': offense_inside,
+        'offense_outside': offense_outside,
+        'offense_playmaking': offense_playmaking,
+        'defense_perimeter': defense_perimeter,
+        'defense_interior': defense_interior,
+        'strongest_offense': strongest_offense,
+        'strongest_defense': strongest_defense,
+        'weakest_offense': weakest_offense,
+        'weakest_defense': weakest_defense
+    }
+
+
 def ai_tactics(opponent_team, user_team=None):
-    """Tactiques de l'IA basées sur le matchup contre l'utilisateur.
-    Si user_team est fourni, l'IA adapte ses tactiques en fonction des faiblesses de l'utilisateur.
-    Sinon, elle utilise son profil offensif par défaut.
+    """Tactiques de l'IA basées UNIQUEMENT sur ses propres points forts.
+    
+    L'IA choisit ses tactiques en fonction de ses propres forces,
+    pas en fonction de l'adversaire (cette étape viendra ensuite).
     """
     from main import perimeter_defense, interior_defense
     tactics = DEFAULT_TACTICS.copy()
     
-    # Forces offensives de l'IA
-    opponent_outside = sum(p.outside_scoring for p in opponent_team.starters) / 5
-    opponent_inside = sum(p.inside_scoring for p in opponent_team.starters) / 5
+    # Calculer les points forts de l'équipe
+    strengths = calculate_team_strengths(opponent_team)
     
-    # Si on connaît l'équipe utilisateur, analyser le matchup
-    if user_team:
-        # Faiblesses défensives de l'utilisateur
-        user_perimeter_def = sum(perimeter_defense(p) for p in user_team.starters) / 5
-        user_interior_def = sum(interior_defense(p) for p in user_team.starters) / 5
-        
-        # Avantages offensifs de l'IA
-        outside_adv = opponent_outside - user_perimeter_def
-        inside_adv = opponent_inside - user_interior_def
-        
-        # Choisir la tactique en fonction de l'avantage le plus fort
-        if inside_adv > outside_adv + 3:  # Seuil baissé de 5 à 3
-            tactics["offenseStyle"] = "Jeu intérieur"
-            tactics["postUpFrequency"] = "Fréquent"
-            tactics["threePointFocus"] = "Limité"
-            tactics["defensivePriority"] = "Protéger peinture"
-        elif outside_adv > inside_adv + 3:  # Seuil baissé de 5 à 3
-            tactics["offenseStyle"] = "Pace & Space"
-            tactics["threePointFocus"] = "Accentué"
-            tactics["defensivePriority"] = "Limiter 3 pts"
-        else:  # Équilibre - utiliser la Force Réelle (tous attributs)
-            # Calculer la Force Réelle intérieure vs extérieure
-            opponent_force_inside = sum(
-                p.inside_scoring * 0.4 + p.rebounding * 0.2 + p.athleticism * 0.2 + p.defense * 0.2
-                for p in opponent_team.starters
-            ) / 5
-            opponent_force_outside = sum(
-                p.outside_scoring * 0.4 + p.playmaking * 0.2 + p.athleticism * 0.2 + p.defense * 0.2
-                for p in opponent_team.starters
-            ) / 5
-            if opponent_force_inside > opponent_force_outside:
-                tactics["offenseStyle"] = "Jeu intérieur"
-                tactics["postUpFrequency"] = "Normal"
-                tactics["defensivePriority"] = "Protéger peinture"
-            else:
-                tactics["offenseStyle"] = "Adresse extérieure"
-                tactics["threePointFocus"] = "Normal"
-                tactics["defensivePriority"] = "Limiter 3 pts"
-        
-        # Tactiques défensives : cibler la force de l'utilisateur
-        if user_team.starters and max(p.outside_scoring for p in user_team.starters) > 75:
-            tactics["defensivePriority"] = "Limiter 3 pts"
-        else:
-            tactics["defensivePriority"] = "Protéger peinture"
-    else:
-        # Sans info sur l'utilisateur, utiliser le profil seul
-        if opponent_inside > opponent_outside + 3:  # Seuil baissé de 5 à 3
-            tactics["offenseStyle"] = "Jeu intérieur"
-            tactics["postUpFrequency"] = "Fréquent"
-            tactics["defensivePriority"] = "Protéger peinture"
-        elif opponent_outside > opponent_inside + 3:  # Seuil baissé de 5 à 3
-            tactics["offenseStyle"] = "Pace & Space"
-            tactics["threePointFocus"] = "Accentué"
-            tactics["defensivePriority"] = "Limiter 3 pts"
-        else:
-            tactics["offenseStyle"] = "Équilibré"
-            tactics["defensivePriority"] = "Équilibrée"
+    # Tactique offensive : basée sur le point fort offensif
+    if strengths['strongest_offense'] == 'inside':
+        tactics["offenseStyle"] = "Jeu intérieur"
+        tactics["postUpFrequency"] = "Fréquent"
+        tactics["threePointFocus"] = "Limité"
+    elif strengths['strongest_offense'] == 'outside':
+        tactics["offenseStyle"] = "Adresse extérieure"
+        tactics["threePointFocus"] = "Normal"
+    else:  # playmaking
+        tactics["offenseStyle"] = "Pace & Space"
+        tactics["threePointFocus"] = "Normal"
+    
+    # Tactique défensive : basée sur le point fort défensif
+    if strengths['strongest_defense'] == 'interior':
+        tactics["defensivePriority"] = "Protéger peinture"
+    else:  # perimeter
+        tactics["defensivePriority"] = "Limiter 3 pts"
     
     return tactics
 

@@ -10,7 +10,7 @@ import server
 from main import DEFAULT_TACTICS, simulate_game
 
 N = int(sys.argv[1]) if len(sys.argv) > 1 else 60
-T1, T2 = "PHI", "SAS"
+T1, T2 = "PHI", "TOR"
 
 # Ordres de grandeur NBA (par équipe et par match)
 NBA = {
