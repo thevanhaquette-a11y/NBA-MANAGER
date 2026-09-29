@@ -28,7 +28,7 @@ def play_one(seed):
     starters, rot1 = server.build_auto_rotation_minutes(a)
     rot2 = server.build_ai_rotation(b)
     return simulate_game(a, b, rot1, rot2, [p.name for p in starters], [p.name for p in b.starters],
-                         None, None, DEFAULT_TACTICS, server.ai_tactics(b))
+                         None, None, DEFAULT_TACTICS, server.ai_tactics(b, a))
 
 
 def main():

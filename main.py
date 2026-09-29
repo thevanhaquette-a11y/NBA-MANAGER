@@ -1306,24 +1306,24 @@ def shooting_chance(attacker, defender, shot_type, shot_area, tactics, assisted,
     play = stat_with_fatigue(attacker, "playmaking")
     defense = defender_quality(defender, shot_area, tactics, attacker)
     if shot_type == 3:
-        chance = 20.5 + p * 0.275 + play * 0.015
-        chance -= defense * 0.060
-        if attacker.role in ("Shooter", "3&D"): chance += 1.5
+        chance = 12.0 + p * 0.250 + play * 0.010
+        chance -= defense * 0.070
+        if attacker.role in ("Shooter", "3&D"): chance += 2.0
         if assisted: chance += 1.0
         chance -= adaptation
-        minimum, maximum = 22, 48
+        minimum, maximum = 22, 45
     elif shot_area == "midrange":
-        chance = 32.0 + p * 0.290 + ath * 0.030 + play * 0.010 - defense * 0.080
+        chance = 25.0 + p * 0.300 + ath * 0.030 + play * 0.010 - defense * 0.090
         if assisted: chance += 0.8
         chance -= adaptation * 0.65
-        minimum, maximum = 28, 56
+        minimum, maximum = 28, 55
     else:
-        chance = 38.0 + i * 0.300 + ath * 0.035 + play * 0.010 - defense * 0.080
-        if attacker.role in ("Scoreur intérieur", "Intérieur"): chance += 2.0
+        chance = 40.0 + i * 0.280 + ath * 0.040 + play * 0.010 - defense * 0.090
+        if attacker.role in ("Scoreur intérieur", "Intérieur", "Protecteur du cercle"): chance += 2.0
         if primary_position(attacker) in ("PF", "C"): chance += 1.0
         if assisted: chance += 0.8
         chance -= adaptation * 0.45
-        minimum, maximum = 37, 65
+        minimum, maximum = 40, 65
 
     if help_defender is not None:
         if shot_area == "paint": chance -= interior_defense(help_defender) * 0.022
